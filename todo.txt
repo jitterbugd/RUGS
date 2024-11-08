@@ -1,5 +1,0 @@
-[ ] Add a "lossy compressed" header to avoid double compressing the image
-[ ] Figure out what's making the lossy compression algo so slow VIA timing
-[ ] Switch from Vec<Rgba> to &[u8] in Image for integration with other libraries
-[ ] Implement commandline arguments
-[ ] Add an option to use different types of lossy compression, such as "Bilinear Interpolation" or the "Closest Color" one that I have now.
