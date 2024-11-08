@@ -32,7 +32,6 @@ pub struct Rgba {
 }
 
 impl Rgba {
-    /// Shorthand to return byte vector from the Struct.
     pub fn to_vec(&self) -> Vec<u8> {
         vec![self.r, self.g, self.b, self.a]
     }
@@ -68,7 +67,6 @@ impl Image {
         buffer
     }
 
-    /// Converts an instance into a byte array
     pub fn deserialize(&self) -> Vec<u8> {
         let mut buffer: Vec<u8> = Vec::new();
         let mut compressor = ZlibEncoder::new(Vec::new(), Compression::default());
@@ -85,7 +83,6 @@ impl Image {
         buffer
     }
 
-    /// Converts raw bytes into an instance
     pub fn serialize(raw_bytes: Vec<u8>) -> Result<Image, &'static str> {
         let header_length = HEADER_COUNT * 4;  // 4 bytes per header
         let header: Vec<&[u8]> = raw_bytes[..header_length].chunks(4).by_ref().take(HEADER_COUNT).collect();
@@ -120,7 +117,6 @@ impl Image {
         })
     }
 
-    /// Compresses the image_data using a custom lossy compression algorithm. 
     pub fn lossy_compress(&mut self, how_much: ComperssionAmnt) -> Result<(), &'static str> {
 
         if self.lossy_compressed {
@@ -148,16 +144,14 @@ impl Image {
         let mut vec: Vec<(Rgba, u32)> = association_buffer.into_iter().collect();
         
         // Sort the vector by the value (second element of the tuple)
-        vec.sort_by(|a, b| b.1.cmp(&a.1)); // Sort in descending order
+        vec.sort_by(|a, b| b.1.cmp(&a.1));
 
-        // Extract the keys of the top 10 entries
+        // Extract the keys of the top X entries
         let top_keys: Vec<Rgba> = vec.iter().take(compression_magnitude).map(|(key, _)| key.clone()).collect();
 
         // Find closest color to the pixel from the table and replace it
         let mut compressed_data: Vec<Rgba> = vec![];
-        for color in colors_parsed.iter() {
-            compressed_data.push(closest_color(color.to_owned(), &top_keys))
-        }   
+        for color in colors_parsed.iter() {compressed_data.push(closest_color(color.to_owned(), &top_keys))}   
 
         self.image_data = compressed_data;
         self.lossy_compressed = true;
