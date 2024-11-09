@@ -62,7 +62,6 @@ pub struct Image {
     pub width: u32,
     pub height: u32,
     pub image_data: Vec<Rgba>,
-    pub lossy_compressed: bool
 }
 
 impl Image {
@@ -115,15 +114,10 @@ impl Image {
             width,
             height,
             image_data,
-            lossy_compressed: false, // Placeholder boolean
         })
     }
 
     pub fn lossy_compress(&mut self, how_much: ComperssionAmnt) -> Result<(), &'static str> {
-
-        if self.lossy_compressed {
-            return Err("Already compressed.")
-        }
 
         let compression_magnitude = match how_much {
             ComperssionAmnt::ULTRA => 250,
@@ -162,7 +156,6 @@ impl Image {
         } else { colors_parsed }};
 
         self.image_data = compressed_data;
-        self.lossy_compressed = true;
 
         Ok(())
     }

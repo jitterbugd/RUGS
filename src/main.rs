@@ -22,8 +22,8 @@ fn graceful_exit(arg_names: &Vec<&str>, arg_descs: &Vec<&str>) {
     }
     println!("\nExample usage: \n\t./RUGS --compression_type=none --input=example.png --output=completed.rugs --view=true");
     std::process::exit(1);
-
 }
+
 
 #[show_image::main] // Required for show_image library
 fn main() {
@@ -117,7 +117,6 @@ fn main() {
         width,
         height,
         image_data,
-        lossy_compressed: false // placeholder
     };
 
     if let Err(error) = new_rugs_image.lossy_compress(compression_magnitude) {

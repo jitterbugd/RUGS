@@ -42,7 +42,6 @@ pub fn demonstration() {
         width,
         height,
         image_data,
-        lossy_compressed: false
     };
 
     if let Err(e) = new_image.lossy_compress(implementation::ComperssionAmnt::MIN) {
