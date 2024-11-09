@@ -8,7 +8,7 @@ An image format engineered to be simple and compact, inspired by greatly the pop
 
 ## Features
 
-- Smaller file size than PNG
+- Smaller file size than PNG (in most cases)
 - Various lossy compression support
 - Baked-in ZLib compression
 - Engineered with simplicity in mind
