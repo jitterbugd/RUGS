@@ -25,7 +25,7 @@ Each segment of the header is exactly four bytes long, and all integers are 32-b
 This will compile and run the commandline utility for RUGS.
 You must have [Rust](https://www.rust-lang.org/learn/get-started) installed to compile it.  
    ```bash
-   git clone https://github.com/jitterbugd/RUGS; cd RUGS; cargo run --release
+   git clone https://github.com/jitterbugd/RUGS; cd RUGS; cargo build --release
  ```
 ## Installation (Windows)
 Visit the releases page [here](https://github.com/jitterbugd/RUGS/releases) and download the binary of your choice. It is a commandline program, so you must execute it from one.
