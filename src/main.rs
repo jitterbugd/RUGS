@@ -20,7 +20,9 @@ fn graceful_exit(arg_names: &Vec<&str>, arg_descs: &Vec<&str>) {
     for (arg_name, arg_desc) in arg_names.iter().zip(arg_descs.iter()) {
         println!("{arg_name:<18} | {arg_desc}")
     }
-    println!("\nExample usage: \n\t./RUGS --compression_type=none --input=example.png --output=completed.rugs --view=true");
+    println!("\nExample usage:");
+    println!("\n\t./RUGS --compression_type=none --input=example.png --output=completed.rugs --view_after=true");
+    println!("\t./RUGS --view=completed.rugs");
     std::process::exit(1);
 }
 
@@ -29,10 +31,12 @@ fn graceful_exit(arg_names: &Vec<&str>, arg_descs: &Vec<&str>) {
 fn main() {
     let (arg_names, arg_descs) = (vec![
         "view",
+        "view_after",
         "compression",
         "output",
         "input"
     ], vec![
+        "View a RUGS image from a path and exit afterwards",
         "View the image upon completion (Default is false)",
         "Level of lossy compression (ultra, high, med, min, none) (Default is none)",
         "Path to output generated file (Default is \"output.rugs\")",
@@ -66,6 +70,28 @@ fn main() {
         
         arguments_map.insert(argument_name, argument_value);
     }
+
+    if let Some(value) = arguments_map.get("view").unwrap() {
+
+        let raw_input_image = std::fs::read(value).unwrap_or_else(|error| {
+            println!("[-] Unable to view image from path: {:?}", error);
+            std::process::exit(1);
+        });
+
+        let new_rugs_image = Image::serialize(raw_input_image).unwrap_or_else(|error| {
+            println!("[-] Unable to serialize image: {:?}", error);
+            std::process::exit(1);
+        });
+
+        let image_bytes = new_rugs_image.image_bytes();
+        let image = ImageView::new(ImageInfo::rgba8(new_rugs_image.width, new_rugs_image.height), &image_bytes);
+        let window = create_window("Image", Default::default()).unwrap();
+        window.set_image("Image", image).unwrap();
+
+        tests::TimingDebugger::breakpoint();
+        println!("Successfully displayed image, exiting now");
+        std::process::exit(0);
+    } 
 
     let input_path = match arguments_map.get("input").unwrap() {
         None => {
@@ -138,7 +164,7 @@ fn main() {
     println!("Done! Your RUGS image is {:.2}% ({:.2} KB) smaller than the inputted PNG", percentage_difference, (size_difference / 1000f64));
     println!("Entire operation took {:.2}s", elapsed_time);
 
-    if !arguments_map.get("view").unwrap().is_none() {
+    if !arguments_map.get("view_after").unwrap().is_none() {
         let image_bytes = new_rugs_image.image_bytes();
         let image = ImageView::new(ImageInfo::rgba8(width, height), &image_bytes);
         let window = create_window("Image", Default::default()).unwrap();
