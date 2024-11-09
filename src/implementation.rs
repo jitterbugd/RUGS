@@ -1,5 +1,8 @@
 use crate::*;
 
+const RUGS_MAGIC_BYTES: &[u8; 4] = b"RUGS";
+const HEADER_COUNT: usize = 3;
+
 fn color_distance(c1: &Rgba, c2: &Rgba) -> f64 {
     let dr = c1.r as f64 - c2.r as f64;
     let dg = c1.g as f64 - c2.g as f64;
@@ -8,7 +11,7 @@ fn color_distance(c1: &Rgba, c2: &Rgba) -> f64 {
     (dr * dr + dg * dg + db * db + da * da).sqrt() // Euclidean distance
 }
 
-fn closest_color(input: Rgba, palette: &[Rgba]) -> Rgba {
+fn closest_color(input: &Rgba, palette: &[Rgba]) -> Rgba {
     let mut closest = &palette[0];
     let mut min_distance = f64::MAX;
 
@@ -46,7 +49,9 @@ impl Rgba {
     }
 }
 
+#[derive(Debug)]
 pub enum ComperssionAmnt {
+    NONE,
     MIN,
     MED,
     HIGH,
@@ -95,9 +100,6 @@ impl Image {
         
         if magic_bytes != RUGS_MAGIC_BYTES {return Err("Magic bytes not RUGS, wrong file format")}
 
-        println!("[+] Extracted width: {}", width);
-        println!("[+] Extracted height: {}", height);
-
         let image_bytes = {
             let mut decompressor = ZlibDecoder::new(Vec::new());
             decompressor.write_all(&raw_bytes[header_length..]).unwrap();
@@ -125,33 +127,39 @@ impl Image {
 
         let compression_magnitude = match how_much {
             ComperssionAmnt::ULTRA => 250,
-            ComperssionAmnt::HIGH => 500,
-            ComperssionAmnt::MED => 750,
-            ComperssionAmnt::MIN => 1000,
+            ComperssionAmnt::HIGH => 1000,
+            ComperssionAmnt::MED => 2000,
+            ComperssionAmnt::MIN => 5000,
+            ComperssionAmnt::NONE => 0,
         };
             
         let mut colors_parsed: Vec<Rgba> = vec![];
         let mut association_buffer: HashMap<Rgba, u32> = HashMap::new();
 
         for chunk in self.image_bytes().chunks(4){
-            if let [r, g, b, a] = chunk.to_owned()[..] {
+            if let [r, g, b, a] = chunk[..] {
                 let color = Rgba {r,g,b,a};
                 colors_parsed.push(color);
                 *association_buffer.entry(color).or_insert(0) += 1;
             }
         }
 
-        let mut vec: Vec<(Rgba, u32)> = association_buffer.into_iter().collect();
-        
-        // Sort the vector by the value (second element of the tuple)
-        vec.sort_by(|a, b| b.1.cmp(&a.1));
+        // Handle when we don't want any lossy compression
+        let compressed_data = { if compression_magnitude != 0 {
+            let mut binding: Vec<(Rgba, u32)> = association_buffer.into_iter().collect();
+            binding.sort_by(|a, b| b.1.cmp(&a.1));
+    
+            // Extract the keys of the top X entries
+            let top_keys: Vec<Rgba> = binding.iter().take(compression_magnitude).map(|(key, _)| key.clone()).collect();
+    
+            // Find closest color to the pixel from the table and replace it
+            let mut compressed_data: Vec<Rgba> = vec![];
+            for color in colors_parsed.iter() {
+                compressed_data.push(closest_color(color, &top_keys))
+            }   
 
-        // Extract the keys of the top X entries
-        let top_keys: Vec<Rgba> = vec.iter().take(compression_magnitude).map(|(key, _)| key.clone()).collect();
-
-        // Find closest color to the pixel from the table and replace it
-        let mut compressed_data: Vec<Rgba> = vec![];
-        for color in colors_parsed.iter() {compressed_data.push(closest_color(color.to_owned(), &top_keys))}   
+            compressed_data
+        } else { colors_parsed }};
 
         self.image_data = compressed_data;
         self.lossy_compressed = true;
