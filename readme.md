@@ -19,7 +19,6 @@ Each segment of the header is exactly four bytes long, and all integers are 32-b
 1. Magic Bytes: A unique identifier that is essentially "RUGS" in ASCII.
 2. Height: The height of the image as an integer.
 3. Width: The width of the image as an integer.
-4. Is Compressed: An integer which is either a one if the image has been lossily compressed before or a zero if it hasn't.
 
 ## Compilation (Powershell)
 This will compile and run the commandline utility for RUGS.
