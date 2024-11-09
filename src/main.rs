@@ -9,12 +9,8 @@ use std::{
     collections::HashMap
 };
 
-mod compressor;
 mod tests;
 mod implementation;
-use implementation::Rgba;
-use implementation::Image;
-use implementation::ComperssionAmnt;
 
 fn graceful_exit(arg_names: &Vec<&str>, arg_descs: &Vec<&str>) {
     for (arg_name, arg_desc) in arg_names.iter().zip(arg_descs.iter()) {
@@ -78,7 +74,7 @@ fn main() {
             std::process::exit(1);
         });
 
-        let new_rugs_image = Image::serialize(raw_input_image).unwrap_or_else(|error| {
+        let new_rugs_image = implementation::Image::serialize(raw_input_image).unwrap_or_else(|error| {
             println!("[-] Unable to serialize image: {:?}", error);
             std::process::exit(1);
         });
@@ -107,14 +103,14 @@ fn main() {
     };
 
     let compression_magnitude = match arguments_map.get("compression").unwrap() {
-        None => ComperssionAmnt::NONE,
+        None => implementation::ComperssionAmnt::NONE,
         Some(result) => {
             match result.to_ascii_lowercase().as_str() {
-                "ultra" => ComperssionAmnt::ULTRA,
-                "high" => ComperssionAmnt::HIGH,
-                "med" => ComperssionAmnt::MED,
-                "min" => ComperssionAmnt::MIN,
-                "none" => ComperssionAmnt::NONE,
+                "ultra" => implementation::ComperssionAmnt::ULTRA,
+                "high" => implementation::ComperssionAmnt::HIGH,
+                "med" => implementation::ComperssionAmnt::MED,
+                "min" => implementation::ComperssionAmnt::MIN,
+                "none" => implementation::ComperssionAmnt::NONE,
                 &_ => {
                     println!("You didn't specify one of the supported compression types.\n");
                     graceful_exit(&arg_names, &arg_descs); unreachable!()
@@ -134,12 +130,12 @@ fn main() {
     let (width, height) = img.dimensions();
     let rgba_image: ImageBuffer<image::Rgba<u8>, Vec<u8>> = img.to_rgba8();
 
-    let mut image_data: Vec<Rgba> = vec![];
+    let mut image_data: Vec<implementation::Rgba> = vec![];
     for chunk in rgba_image.into_raw().chunks(4) {
-        image_data.push(Rgba::from_bytes(chunk));
+        image_data.push(implementation::Rgba::from_bytes(chunk));
     }
 
-    let mut new_rugs_image = Image {
+    let mut new_rugs_image = implementation::Image {
         width,
         height,
         image_data,
