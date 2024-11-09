@@ -28,4 +28,4 @@ You must have [Rust](https://www.rust-lang.org/learn/get-started) installed to c
    git clone https://github.com/jitterbugd/RUGS; cd RUGS; cargo run --release
  ```
 ## Installation (Windows)
-https://github.com/jitterbugd/RUGS/releases
+Visit the releases page [here](https://github.com/jitterbugd/RUGS/releases) and download the binary of your choice. It is a commandline program, so you must execute it from one.
